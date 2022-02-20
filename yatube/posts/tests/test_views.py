@@ -186,13 +186,14 @@ class PostPagesTests(TestCase):
         """ Проверяем, что пост не попал на странице группы,
         для которой он не был предназначен """
         # Проверяем контекст:
-        context = {
-            'pk': self.post.id,
-            'text': 'Тестовый заголовок',
-            'group': self.group_check.pk,
-        }
-        self.assertFalse(response.context['page_obj'].exists()
-        )
+        response = self.guest_client.get(
+            reverse('posts:group_posts',
+                kwargs={'slug': self.group.slug}
+                )
+            )
+        context = response.context['page_obj'].object_list
+        new_post = Post.objects.get(text=self.form_data['text'])
+        self.assertFalse(new_post in context)
         # Проверяем, что первый элемент списка в профайле пользователя -
         # это созданный нами пост:
         response = self.authorized_client.get(
