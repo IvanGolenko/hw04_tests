@@ -47,7 +47,8 @@ class TaskCreateFormTests(TestCase):
         ))
         # Проверяем, что создалась запись
         self.assertTrue(Post.objects.filter(group=self.group,
-            author=self.user, id=self.post.id).exists())
+            author=self.user, id=self.post.id).exists()
+        )
 
     def test_edit_post(self):
         posts_count = Post.objects.count()

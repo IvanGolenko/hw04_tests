@@ -12,6 +12,7 @@ User = get_user_model()
 
 NUM_OF_OBJ = 10
 
+
 class PostPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -154,18 +155,6 @@ class PostPagesTests(TestCase):
         self.assertTrue(is_edit)
         self.assertIsInstance(is_edit, bool)
 
-    """ def test_post_3_pages(self):
-        three_pages = {
-		    reverse('posts:index'): 'test-slug',
-		    reverse('posts:group_posts', kwargs={'slug': 'test-slug'}): 'test-slug',
-		    reverse('posts:profile', kwargs={'username': 'Sophia'}): 'test-slug',
-	    }
-        for adress, expected_value in three_pages.items():
-            with self.subTest(adress=adress):
-                response = self.authorized_client.get(adress)
-                test_obj = response.context['page_obj'][0]
-                self.asserEqual(test_obj.group.slug, expected_value) """
-
     def test_post_appears_in_3_pages(self):
         """
         Проверяем, что при создании поста с группой, этот пост появляется:
@@ -192,7 +181,7 @@ class PostPagesTests(TestCase):
         for element, names in context_matching.items():
             with self.subTest(element=element):
                 self.assertEqual(element, names)
-        
+
     def post_not_found(self):
         """ Проверяем, что пост не попал на странице группы,
         для которой он не был предназначен """
