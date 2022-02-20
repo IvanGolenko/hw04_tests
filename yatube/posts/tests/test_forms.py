@@ -2,8 +2,8 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Post, Group
 from ..forms import PostForm
+from ..models import Group, Post
 
 User = get_user_model()
 
@@ -46,7 +46,8 @@ class TaskCreateFormTests(TestCase):
             kwargs={'username': self.user.username}
         ))
         # Проверяем, что создалась запись
-        self.assertTrue(Post.objects.filter(author=self.user).exists())
+        self.assertTrue(Post.objects.filter(group=self.group,
+            author=self.user, id=self.post.id).exists())
 
     def test_edit_post(self):
         posts_count = Post.objects.count()
@@ -57,11 +58,11 @@ class TaskCreateFormTests(TestCase):
         # Отправляем POST-запрос
         response = self.authorized_client.post(
             reverse('posts:post_edit', kwargs={
-                'post_id': f'{self.post.id}'}), context, follow=True
+                'post_id': '{}'.format(self.post.id)}), context, follow=True
         )
         # Проверяем, сработал ли редирект:
         self.assertRedirects(response, reverse(
-            'posts:post_detail', kwargs={'post_id': f'{self.post.id}'})
+            'posts:post_detail', kwargs={'post_id': '{}'.format(self.post.id)})
         )
         # Проверяем, увеличилось ли число постов:
         self.assertEqual(Post.objects.count(), posts_count)

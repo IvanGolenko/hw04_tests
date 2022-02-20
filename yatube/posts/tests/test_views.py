@@ -1,15 +1,16 @@
+from itertools import islice
+
+from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
-from django import forms
-
-from itertools import islice
 
 from ..forms import PostForm
 from ..models import Group, Post
 
 User = get_user_model()
 
+NUM_OF_OBJ = 10
 
 class PostPagesTests(TestCase):
     @classmethod
@@ -153,13 +154,23 @@ class PostPagesTests(TestCase):
         self.assertTrue(is_edit)
         self.assertIsInstance(is_edit, bool)
 
+    """ def test_post_3_pages(self):
+        three_pages = {
+		    reverse('posts:index'): 'test-slug',
+		    reverse('posts:group_posts', kwargs={'slug': 'test-slug'}): 'test-slug',
+		    reverse('posts:profile', kwargs={'username': 'Sophia'}): 'test-slug',
+	    }
+        for adress, expected_value in three_pages.items():
+            with self.subTest(adress=adress):
+                response = self.authorized_client.get(adress)
+                test_obj = response.context['page_obj'][0]
+                self.asserEqual(test_obj.group.slug, expected_value) """
+
     def test_post_appears_in_3_pages(self):
         """
         Проверяем, что при создании поста с группой, этот пост появляется:
         на главной странице сайта, на странице выбранной группы,
-        в профайле пользователя. Проверяем, что пост не попал на странице
-        группы, для которой он не был предназначен
-        """
+        в профайле пользователя. """
         # Проверяем, что первый элемент списка на главной странице сайта -
         # это созданный нами пост:
         response = self.authorized_client.get(reverse('posts:index'))
@@ -181,8 +192,12 @@ class PostPagesTests(TestCase):
         for element, names in context_matching.items():
             with self.subTest(element=element):
                 self.assertEqual(element, names)
-        # Проверяем, что этого поста нет в других группах:
-        self.assertFalse(Post.objects.filter(
+        
+    def post_not_found(self):
+        """ Проверяем, что пост не попал на странице группы,
+        для которой он не был предназначен """
+        # Проверяем контекст:
+        self.assertFalse(response.context['page_obj'].filter(
             pk=self.post.id,
             text='Тестовый заголовок',
             group=self.group_check.pk).exists()
@@ -213,7 +228,7 @@ class PaginatorViewsTest(TestCase):
             group=cls.group) for i in range(batch_size)
         )
         batch = list(islice(posts, batch_size))
-        Post.objects.bulk_create(batch, batch_size)
+        Post.objects.bulk_create(batch)
 
     def setUp(self):
         # Создаем авторизованный клиент:
@@ -229,21 +244,15 @@ class PaginatorViewsTest(TestCase):
             'posts:group_list', kwargs={'slug': 'test-slug'})
         profile_page = reverse(
             'posts:profile', kwargs={'username': 'Sophia'})
-        posts_on_first_pages = {
-            index_page: 10,
-            grouplist_page: 10,
-            profile_page: 10,
+        posts_on_page = {
+            (index_page, 1): NUM_OF_OBJ,
+            (grouplist_page, 1): NUM_OF_OBJ,
+            (profile_page, 1): NUM_OF_OBJ,
+            (index_page, 2): 3,
+            (grouplist_page, 2): 3,
+            (profile_page, 2): 3,
         }
-        posts_on_second_pages = {
-            index_page: 3,
-            grouplist_page: 3,
-            profile_page: 3,
-        }
-        for url, pages in posts_on_first_pages.items():
+        for (url, page), pages in posts_on_page.items():
             with self.subTest(url=url):
-                response = self.authorized_client.get(url)
-                self.assertEqual(len(response.context['page_obj']), pages)
-        for url, pages in posts_on_second_pages.items():
-            with self.subTest(url=url):
-                response = self.authorized_client.get(url, {'page': 2})
+                response = self.authorized_client.get(url, {'page': page})
                 self.assertEqual(len(response.context['page_obj']), pages)

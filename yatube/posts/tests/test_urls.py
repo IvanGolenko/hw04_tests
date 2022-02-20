@@ -21,14 +21,13 @@ class PostURLTests(TestCase):
             author=cls.author,
             group=cls.group,
             text='Тестовый заголовок',
-            pub_date='01.02.2022',
         )
+        # Создаем пользователя
+        cls.user = User.objects.create_user(username='HasNoName')
 
     def setUp(self):
         # Создаем неавторизованный клиент
         self.guest_client = Client()
-        # Создаем пользователя
-        self.user = User.objects.create_user(username='HasNoName')
         # Создаем второй клиент
         self.authorized_client = Client()
         # Авторизуем пользователя
