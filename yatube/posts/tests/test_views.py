@@ -186,10 +186,12 @@ class PostPagesTests(TestCase):
         """ Проверяем, что пост не попал на странице группы,
         для которой он не был предназначен """
         # Проверяем контекст:
-        self.assertFalse(response.context['page_obj'].filter(
-            pk=self.post.id,
-            text='Тестовый заголовок',
-            group=self.group_check.pk).exists()
+        context = {
+            'pk': self.post.id,
+            'text': 'Тестовый заголовок',
+            'group': self.group_check.pk,
+        }
+        self.assertFalse(response.context['page_obj'].exists()
         )
         # Проверяем, что первый элемент списка в профайле пользователя -
         # это созданный нами пост:

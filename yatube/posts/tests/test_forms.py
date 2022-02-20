@@ -46,7 +46,8 @@ class TaskCreateFormTests(TestCase):
             kwargs={'username': self.user.username}
         ))
         # Проверяем, что создалась запись
-        self.assertTrue(Post.objects.filter(group=self.group,
+        self.assertTrue(
+            Post.objects.filter(group=self.group,
             author=self.user, id=self.post.id).exists()
         )
 
