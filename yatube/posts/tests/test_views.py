@@ -187,10 +187,11 @@ class PostPagesTests(TestCase):
         для которой он не был предназначен """
         # Проверяем контекст:
         response = self.guest_client.get(
-            reverse('posts:group_posts',
+            reverse(
+                'posts:group_posts',
                 kwargs={'slug': self.group.slug}
-                )
             )
+        )
         context = response.context['page_obj'].object_list
         new_post = Post.objects.get(text=self.form_data['text'])
         self.assertFalse(new_post in context)
