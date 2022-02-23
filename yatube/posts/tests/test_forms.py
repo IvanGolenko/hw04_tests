@@ -55,7 +55,7 @@ class TaskCreateFormTests(TestCase):
             ).exists()
         )
         # Проверяем, увеличилось ли число постов
-        self.assertEqual(Post.objects.count(), posts_count +1)
+        self.assertEqual(Post.objects.count(), posts_count +1 )
 
     def test_edit_post(self):
         posts_count = Post.objects.count()
