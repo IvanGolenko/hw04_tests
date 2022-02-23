@@ -31,6 +31,7 @@ class TaskCreateFormTests(TestCase):
         self.authorized_client.force_login(self.user)
 
     def test_create_post(self):
+        posts_count = Post.objects.count()
         context = {
             'text': 'Тестовый пост',
             'group': self.group.pk,
@@ -39,6 +40,7 @@ class TaskCreateFormTests(TestCase):
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=context,
+            follow=True,
         )
         # Проверяем, сработал ли редирект
         self.assertRedirects(response, reverse(
@@ -48,10 +50,12 @@ class TaskCreateFormTests(TestCase):
         # Проверяем, что создалась запись
         self.assertTrue(
             Post.objects.filter(
-                group=self.group, author=self.user,
-                id=self.post.id
+                text='Тестовый пост',
+                group=self.group.pk,
             ).exists()
         )
+        # Проверяем, увеличилось ли число постов
+        self.assertEqual(Post.objects.count(), posts_count +1)
 
     def test_edit_post(self):
         posts_count = Post.objects.count()
@@ -62,15 +66,15 @@ class TaskCreateFormTests(TestCase):
         # Отправляем POST-запрос
         response = self.authorized_client.post(
             reverse('posts:post_edit', kwargs={
-                'post_id': '{}'.format(self.post.id)}), context, follow=True
+                'post_id': self.post.id}), context, follow=True
         )
-        # Проверяем, сработал ли редирект:
+        # Проверяем, сработал ли редирект
         self.assertRedirects(response, reverse(
             'posts:post_detail', kwargs={'post_id': '{}'.format(self.post.id)})
         )
-        # Проверяем, увеличилось ли число постов:
+        # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(), posts_count)
-        # Проверяем, что создалась запись:
+        # Проверяем, что создалась запись
         self.assertTrue(Post.objects.filter(
             pk=self.post.id, text='Отредактированный пост',
             group=self.group.pk).exists()

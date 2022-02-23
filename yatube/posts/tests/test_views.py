@@ -172,37 +172,41 @@ class PostPagesTests(TestCase):
         )
         test_object = response.context['page_obj'][0]
         test_group = test_object.group
-        # Создаем словарь с элементами страницы(ключ)
-        # и ожидаемым контекстом (значение):
-        context_matching = {
-            test_object: self.post,
-            test_group: self.group
-        }
-        for element, names in context_matching.items():
-            with self.subTest(element=element):
-                self.assertEqual(element, names)
+        self_post = self.post
+        self_group = self.group
 
-    def post_not_found(self):
-        """ Проверяем, что пост не попал на странице группы,
-        для которой он не был предназначен """
-        # Проверяем контекст:
-        response = self.guest_client.get(
-            reverse(
-                'posts:group_posts',
-                kwargs={'slug': self.group.slug}
-            )
-        )
-        context = response.context['page_obj'].object_list
-        new_post = Post.objects.get(text=self.form_data['text'])
-        self.assertFalse(new_post in context)
         # Проверяем, что первый элемент списка в профайле пользователя -
         # это созданный нами пост:
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': 'Sophia'})
         )
-        test_object = response.context['page_obj'][0]
+        test_sophia = response.context['page_obj'][0]
         self.assertEqual(test_object, self.post)
 
+        # Создаем словарь с элементами страницы(ключ)
+        # и ожидаемым контекстом (значение):
+        context_matching = {
+            test_object: self_post,
+            test_group: self_group,
+            test_sophia: self.post
+        }
+        for element, names in context_matching.items():
+            with self.subTest(element=element):
+                self.assertEqual(element, names)
+
+    def test_post_not_found(self):
+        """ Проверяем, что пост не попал на странице группы,
+        для которой он не был предназначен """
+        # Проверяем контекст:
+        response = self.authorized_client.get(
+            reverse(
+                'posts:group_list',
+                kwargs={'slug': self.group_check.slug}
+            )
+        )
+        context = response.context['page_obj'].object_list
+        self.assertFalse(self.post in context)
+        # Не удалось разобраться с assertIn
 
 class PaginatorViewsTest(TestCase):
     @classmethod
@@ -220,8 +224,7 @@ class PaginatorViewsTest(TestCase):
             author=cls.user,
             group=cls.group) for i in range(batch_size)
         )
-        batch = list(islice(posts, batch_size))
-        Post.objects.bulk_create(batch)
+        Post.objects.bulk_create(posts)
 
     def setUp(self):
         # Создаем авторизованный клиент:
