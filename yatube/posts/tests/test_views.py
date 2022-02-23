@@ -1,5 +1,3 @@
-from itertools import islice
-
 from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -207,6 +205,7 @@ class PostPagesTests(TestCase):
         context = response.context['page_obj'].object_list
         self.assertFalse(self.post in context)
         # Не удалось разобраться с assertIn
+
 
 class PaginatorViewsTest(TestCase):
     @classmethod
